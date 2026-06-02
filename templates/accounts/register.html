@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | Digital KYC Portal{% endblock %}
+
+{% block content %}
+<main class="flex-grow flex items-center justify-center min-h-[75vh] py-12">
+    <div class="w-full max-w-lg bg-white rounded-lg shadow-md border border-gray-100 p-8">
+        <div class="text-center mb-6">
+            <div class="mx-auto w-12 h-1 bg-primary rounded mb-6" style="width:56px"></div>
+            <h1 class="text-2xl font-semibold text-primary mb-1">Create your account</h1>
+            <p class="text-sm text-gray-500">Start your secure verification journey today.</p>
+        </div>
+
+        <form method="post" action="{% url 'register' %}" novalidate class="space-y-4" id="register-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="text-sm text-red-600">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div>
+                <label class="block text-xs text-gray-600 mb-1" for="id_username">Username</label>
+                {{ form.username }}
+                {% for err in form.username.errors %}<p class="text-xs text-red-600 mt-1">{{ err }}</p>{% endfor %}
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-600 mb-1" for="id_email">Email Address</label>
+                {{ form.email }}
+                {% for err in form.email.errors %}<p class="text-xs text-red-600 mt-1">{{ err }}</p>{% endfor %}
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-600 mb-1" for="id_password">Password</label>
+                <div class="relative">
+                    {{ form.password }}
+                    <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500" onclick="togglePassword()">👁️</button>
+                </div>
+                <div class="h-2 mt-2 bg-gray-100 rounded overflow-hidden">
+                    <div id="pw-bar" class="h-full bg-primary w-0"></div>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">Security requirement: Min 12 characters</div>
+                {% for err in form.password.errors %}<p class="text-xs text-red-600 mt-1">{{ err }}</p>{% endfor %}
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-600 mb-1" for="id_confirm_password">Confirm Password</label>
+                {{ form.confirm_password }}
+                {% for err in form.confirm_password.errors %}<p class="text-xs text-red-600 mt-1">{{ err }}</p>{% endfor %}
+            </div>
+
+            <div style="display:none;">{{ form.website }}</div>
+
+            <div class="flex items-start gap-2 text-sm">
+                <input id="terms" name="terms" type="checkbox" class="mt-1" required />
+                <label for="terms" class="text-sm text-gray-600">I agree to the <a href="#" class="text-primary underline">Terms of Service</a> and <a href="#" class="text-primary underline">Privacy Policy</a>, including processing of my biometric data for identity verification.</label>
+            </div>
+
+            <button type="submit" class="w-full bg-primary text-white py-3 rounded mt-1">Create Account <span class="material-symbols-outlined align-middle">arrow_forward</span></button>
+        </form>
+
+        <div class="mt-5 text-center text-sm text-gray-500">
+            Already have an account?
+            <a href="{% url 'login' %}" class="text-primary font-medium hover:underline">Sign in</a>
+        </div>
+
+    <script>
+        // client-side helper: show message if terms not checked
+        (function(){
+            const form = document.getElementById('register-form');
+            if(!form) return;
+            form.addEventListener('submit', function(e){
+                const terms = document.getElementById('terms');
+                if(terms && !terms.checked){
+                    e.preventDefault();
+                    alert('Please agree to the Terms of Service and Privacy Policy to continue.');
+                    terms.focus();
+                }
+            });
+        })();
+    </script>
+
+        <div class="mt-6 border-t pt-4 text-center text-sm text-gray-500">
+            <div class="flex justify-center gap-6 mb-3">
+                <div class="flex items-center gap-2"><span class="material-symbols-outlined">verified</span><span>GDPR Compliant</span></div>
+                <div class="flex items-center gap-2"><span class="material-symbols-outlined">lock</span><span>AES-256 Encryption</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(){
+            const pw = document.getElementById('id_password');
+            if(!pw) return;
+            pw.type = pw.type === 'password' ? 'text' : 'password';
+        }
+        const pwInput = document.getElementById('id_password');
+        const bar = document.getElementById('pw-bar');
+        if(pwInput && bar){
+            pwInput.addEventListener('input', ()=>{
+                const v = pwInput.value || '';
+                let score = Math.min(4, (v.length >= 12) + /[A-Z]/.test(v) + /[0-9]/.test(v) + /[^A-Za-z0-9]/.test(v));
+                bar.style.width = ((score/4)*100) + '%';
+            });
+        }
+    </script>
+
+</main>
+{% endblock %}

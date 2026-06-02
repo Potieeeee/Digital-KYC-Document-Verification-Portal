@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    .dashboard-shell {
+        background:
+            radial-gradient(circle at top, rgba(87, 0, 0, 0.06), transparent 36%),
+            linear-gradient(180deg, #fbfbfb 0%, #f7f7f8 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-shell min-h-[calc(100vh-9rem)] py-10 sm:py-14">
+    <div class="max-w-5xl mx-auto px-6">
+        <div class="mb-8 flex items-center gap-3">
+            <div class="h-6 w-1 rounded bg-primary"></div>
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">Client Dashboard</h2>
+                <p class="text-sm text-gray-500">Your verification status and risk summary at a glance.</p>
+            </div>
+        </div>
+
+        {% if profile %}
+            <div class="bg-white/95 backdrop-blur rounded-2xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] border border-gray-200 overflow-hidden">
+                <div class="px-6 sm:px-8 pt-7 pb-6 border-b border-gray-100">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold tracking-[0.18em] text-gray-500 uppercase">Name</p>
+                            <h3 class="mt-1 text-2xl sm:text-3xl font-semibold text-gray-900">{{ profile.full_name }}</h3>
+                            {% if profile.reference_code %}
+                                <p class="mt-2 text-sm text-gray-500">Reference code: <span class="font-medium text-gray-700">{{ profile.reference_code }}</span></p>
+                            {% endif %}
+                        </div>
+
+                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 self-start">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                            {% if profile.status %}{{ profile.status|capfirst }}{% else %}In Review{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid gap-px bg-gray-100 sm:grid-cols-2">
+                    <div class="bg-white px-6 sm:px-8 py-6">
+                        <p class="text-[11px] font-semibold tracking-[0.18em] text-gray-500 uppercase">Risk Level</p>
+                        <p class="mt-2 text-lg sm:text-xl text-gray-900">{{ profile.risk_level|capfirst }}</p>
+                    </div>
+
+                    <div class="bg-white px-6 sm:px-8 py-6">
+                        <p class="text-[11px] font-semibold tracking-[0.18em] text-gray-500 uppercase">Risk Score</p>
+                        <p class="mt-2 text-lg sm:text-xl text-gray-900">{{ profile.risk_score }}</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-6 sm:px-8 py-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm text-gray-500">
+                        {% if profile.updated_at %}
+                            Last updated {{ profile.updated_at|date:"M d, Y" }}
+                        {% else %}
+                            Your dashboard will refresh as your case is reviewed.
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'edit_kyc' profile.id %}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-95">
+                        Edit My KYC
+                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="mx-auto max-w-2xl rounded-2xl border border-dashed border-gray-300 bg-white/90 px-8 py-16 text-center shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
+                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary text-3xl">⌁</div>
+                <h3 class="mt-6 text-2xl font-semibold text-gray-900">No KYC profile yet</h3>
+                <p class="mt-3 text-sm text-gray-500">Create your verification profile to see status, risk level, and document review updates here.</p>
+                <div class="mt-8">
+                    <a href="{% url 'create_kyc' %}" class="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-95">
+                        Start KYC
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

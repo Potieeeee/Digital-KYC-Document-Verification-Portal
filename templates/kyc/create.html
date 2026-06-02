@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    .create-shell {
+        background:
+            radial-gradient(circle at top, rgba(87, 0, 0, 0.06), transparent 34%),
+            linear-gradient(180deg, #fbfbfb 0%, #f7f7f8 100%);
+    }
+
+    .form-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(250,250,250,0.98) 100%);
+        border: 1px solid rgba(87, 0, 0, 0.08);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+    }
+
+    .section-kicker {
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #6b7280;
+    }
+
+    .field-card {
+        border: 1px solid #ececec;
+        border-radius: 0.9rem;
+        background: #fff;
+        padding: 1rem;
+    }
+
+    .field-card label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .field-card .helptext {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .field-card .errorlist {
+        color: #b91c1c;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .field-card input,
+    .field-card select,
+    .field-card textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e6e6e6;
+        background: #ffffff;
+        box-sizing: border-box;
+    }
+
+    .field-card textarea {
+        min-height: 92px;
+        resize: vertical;
+    }
+
+    .field-card input[type="file"] {
+        padding: 0.35rem 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .field-card input:focus,
+    .field-card select:focus,
+    .field-card textarea:focus {
+        outline: none;
+        border-color: #570000;
+        box-shadow: 0 0 0 3px rgba(87, 0, 0, 0.08);
+    }
+
+    .doc-row {
+        border: 1px solid #ececec;
+        border-radius: 1rem;
+        background: #fff;
+        padding: 1rem;
+    }
+    @media (min-width: 768px) {
+        .doc-row {
+            padding: 1.1rem 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="create-shell min-h-[calc(100vh-9rem)] py-10 sm:py-14">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-8 flex items-center gap-3">
+            <div class="h-6 w-1 rounded bg-primary"></div>
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">Submit KYC</h2>
+                <p class="text-sm text-gray-500">Create your profile and upload documents in one place.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <aside class="lg:col-span-1">
+                <div class="form-card rounded-2xl p-6 sticky top-20">
+                    <div class="flex items-center gap-4">
+                        <div class="h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-semibold">K</div>
+                        <div>
+                            <p class="text-xs font-semibold tracking-[0.18em] text-gray-500 uppercase">New Profile</p>
+                            <h3 class="text-lg font-medium text-gray-900">Start your KYC submission</h3>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-3 text-sm text-gray-600">
+                        <div class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                            <span class="text-gray-500">Profile details</span>
+                            <span class="font-medium text-gray-900">Required</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                            <span class="text-gray-500">Documents</span>
+                            <span class="font-medium text-gray-900">Up to 3</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                            <span class="text-gray-500">Review</span>
+                            <span class="font-medium text-gray-900">Manual check</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500 leading-6">
+                        Make sure your name, ID number, and uploaded files match. Clear, readable files help the review move faster.
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="{% url 'dashboard' %}" class="block text-center rounded-lg border border-primary/10 text-primary px-4 py-2 text-sm font-medium hover:bg-primary/5">Cancel</a>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="lg:col-span-2">
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+
+                    {% if profile_form.non_field_errors %}
+                        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {{ profile_form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-card rounded-2xl p-5 sm:p-6">
+                        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <div class="section-kicker">Personal Information</div>
+                                <h3 class="mt-2 text-xl font-semibold text-gray-900">Tell us who you are</h3>
+                                <p class="mt-1 text-sm text-gray-500">Use the same details as your official documents.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+                            {% for field in profile_form %}
+                                <div class="field-card">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                                    {% if field.errors %}{% for error in field.errors %}<div class="errorlist">{{ error }}</div>{% endfor %}{% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-card rounded-2xl p-5 sm:p-6">
+                        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <div class="section-kicker">Documents</div>
+                                <h3 class="mt-2 text-xl font-semibold text-gray-900">Upload supporting files</h3>
+                                <p class="mt-1 text-sm text-gray-500">Add the documents needed to verify your identity.</p>
+                            </div>
+                        </div>
+
+                        {{ formset.management_form }}
+
+                        <div class="mt-6 space-y-4">
+                            {% for form in formset %}
+                                <div class="doc-row">
+                                    {% if form.non_field_errors %}
+                                        {% for err in form.non_field_errors %}<div class="errorlist text-sm text-red-600 mb-3">{{ err }}</div>{% endfor %}
+                                    {% endif %}
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {% for field in form.visible_fields %}
+                                            <div class="field-card">
+                                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                {{ field }}
+                                                {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                                                {% if field.errors %}{% for error in field.errors %}<div class="errorlist">{{ error }}</div>{% endfor %}{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <a href="{% url 'dashboard' %}" class="text-sm text-gray-600 hover:text-primary">Back to Dashboard</a>
+                        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-95">
+                            Submit KYC
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="min-h-[60vh] py-12">
+    <div class="max-w-6xl mx-auto px-6">
+        <a href="{% url 'dashboard' %}" class="text-sm text-gray-600 mb-4 inline-block">&larr; Back to Dashboard</a>
+
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">My KYC Profile</h1>
+                <p class="text-sm text-gray-500">Reference: {{ profile.reference_code }}</p>
+            </div>
+            <div>
+                {% if profile.status == 'approved' %}
+                    <span class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-green-50 text-green-700 text-sm font-medium">Approved</span>
+                {% elif profile.status == 'rejected' %}
+                    <span class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-red-50 text-red-700 text-sm font-medium">Rejected</span>
+                {% elif profile.status == 'submitted' or profile.status == 'under_review' %}
+                    <span class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-yellow-50 text-yellow-700 text-sm font-medium">{{ profile.status|capfirst }}</span>
+                {% else %}
+                    <span class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-50 text-gray-700 text-sm font-medium">{{ profile.status|capfirst }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left profile summary -->
+            <aside class="lg:col-span-1">
+                <div class="rounded-2xl bg-white/95 shadow-[0_14px_40px_rgba(15,23,42,0.06)] border border-gray-200 p-6 text-center">
+                    <div class="mx-auto h-20 w-20 rounded-lg bg-primary text-white flex items-center justify-center text-2xl font-bold shadow-md">{{ profile.full_name|default:"U"|slice:":1" }}</div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">{{ profile.full_name }}</h3>
+                    <p class="text-xs text-gray-500">Verified Digital Identity</p>
+
+                    <div class="mt-6 text-left">
+                        <div class="flex items-center justify-between py-2 border-b">
+                            <div class="text-xs text-gray-500">Risk Level</div>
+                            <div class="text-sm font-medium text-gray-800 px-3 py-1 rounded bg-gray-100">{{ profile.risk_level|capfirst }}</div>
+                        </div>
+                        <div class="flex items-center justify-between py-4">
+                            <div class="text-sm text-gray-500">Risk Score</div>
+                            <div class="text-2xl font-semibold text-gray-900">{{ profile.risk_score }}</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right documents panel -->
+            <div class="lg:col-span-2">
+                <div class="rounded-2xl bg-white/95 shadow-[0_18px_50px_rgba(15,23,42,0.06)] border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-md font-semibold text-gray-800">My Uploaded Documents</h4>
+                        <div class="text-sm text-gray-400">&nbsp;</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for document in profile.documents.all %}
+                            <div class="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-4 py-3">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-10 w-10 rounded-md bg-white border flex items-center justify-center text-primary text-lg">📄</div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-800">{{ document.get_document_type_display }}</div>
+                                        <div class="text-xs text-gray-500">Uploaded {{ document.uploaded_at|date:'M d, Y' }}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <a href="{% url 'client_document_detail' document.id %}" class="text-sm text-gray-600 hover:text-primary">View File <span class="ml-1">🔗</span></a>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-sm text-gray-500">No documents uploaded yet.</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if profile.documents.all %}
+                        <div class="mt-6 p-4 border rounded-md bg-gray-50 text-xs text-gray-500">Portal Visual Integrity Reference {{ profile.id|stringformat:"02d" }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-3 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-white shadow-lg">RETURN TO DASHBOARD</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

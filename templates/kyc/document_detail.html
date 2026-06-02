@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-12 px-6">
+	<div class="flex items-start gap-6">
+		<!-- Preview pane -->
+		<div class="flex-1 rounded-lg overflow-hidden border bg-white shadow-sm">
+			{% if document.file.url|lower|slice:"-4:" == ".pdf" %}
+				<div class="w-full h-[72vh] md:h-[80vh] bg-gray-100">
+					<iframe src="{{ document.file.url }}" class="w-full h-full" frameborder="0"></iframe>
+				</div>
+				<div class="p-4 bg-gray-50 flex items-center justify-between">
+					<div class="text-sm text-gray-600">PDF Preview</div>
+					<div class="flex items-center gap-3">
+						<a href="{{ document.file.url }}" target="_blank" class="text-sm text-primary hover:underline">Open in new tab</a>
+						<a href="{{ document.file.url }}" download class="inline-block bg-primary text-white px-3 py-2 rounded text-sm">Download</a>
+					</div>
+				</div>
+			{% else %}
+				<div class="w-full bg-gray-100 flex items-center justify-center" style="min-height:60vh;">
+					<img src="{{ document.file.url }}" alt="{{ document.get_document_type_display }}" class="max-h-[75vh] object-contain"/>
+				</div>
+				<div class="p-4 bg-gray-50 flex items-center justify-between">
+					<div class="text-sm text-gray-600">Image Preview</div>
+					<div class="flex items-center gap-3">
+						<a href="{{ document.file.url }}" target="_blank" class="text-sm text-primary hover:underline">Open in new tab</a>
+						<a href="{{ document.file.url }}" download class="inline-block bg-primary text-white px-3 py-2 rounded text-sm">Download</a>
+					</div>
+				</div>
+			{% endif %}
+		</div>
+
+		<!-- Metadata / actions -->
+		<aside class="w-80 shrink-0">
+			<div class="rounded-lg border bg-white p-4 shadow-sm space-y-4">
+				<div>
+					<h3 class="text-lg font-semibold text-gray-800">{{ document.get_document_type_display }}</h3>
+					<div class="text-xs text-gray-500">Uploaded {{ document.uploaded_at|date:'M d, Y H:i' }}</div>
+				</div>
+
+				<div class="space-y-2">
+					<div class="text-xs text-gray-500">Status</div>
+					<div class="text-sm font-medium">
+						{% if document.status == 'valid' %}
+							<span class="inline-block px-2 py-1 rounded bg-green-50 text-green-700">Valid</span>
+						{% elif document.status == 'invalid' %}
+							<span class="inline-block px-2 py-1 rounded bg-red-50 text-red-700">Invalid</span>
+						{% elif document.status == 'needs_resubmission' %}
+							<span class="inline-block px-2 py-1 rounded bg-yellow-50 text-yellow-700">Needs Resubmission</span>
+						{% else %}
+							<span class="inline-block px-2 py-1 rounded bg-gray-50 text-gray-700">Pending</span>
+						{% endif %}
+					</div>
+				</div>
+
+				{% if document.remarks %}
+				<div>
+					<div class="text-xs text-gray-500">Reviewer remarks</div>
+					<div class="text-sm text-gray-700 whitespace-pre-wrap">{{ document.remarks }}</div>
+				</div>
+				{% endif %}
+
+				<div class="pt-2">
+					<a href="{% url 'client_kyc_detail' document.profile.id %}" class="block text-sm text-gray-700 hover:underline">Back to profile</a>
+					<a href="{% url 'dashboard' %}" class="block text-sm text-gray-700 hover:underline mt-2">Back to dashboard</a>
+				</div>
+
+				<div class="pt-4">
+					<a href="{{ document.file.url }}" download class="w-full inline-block text-center bg-primary text-white px-3 py-2 rounded">Download Document</a>
+				</div>
+			</div>
+		</aside>
+	</div>
+</div>
+{% endblock %}

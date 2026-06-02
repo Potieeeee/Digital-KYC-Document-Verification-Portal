@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="min-h-[60vh] py-10">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="h-5 w-1 rounded bg-primary"></div>
+            <div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">Reviewer Dashboard</h2>
+                <p class="text-sm text-gray-500">Review submitted KYC profiles and manage verification workflow.</p>
+            </div>
+        </div>
+
+        <div class="bg-white/95 rounded-2xl shadow-[0_18px_50px_rgba(15,23,42,0.06)] border border-gray-200 overflow-hidden">
+            <div class="px-6 sm:px-8 py-6">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                    <div class="md:col-span-5">
+                        <input type="text" name="search" placeholder="Search name" value="{{ search|default:'' }}" class="w-full rounded-lg border border-gray-200 px-4 py-2 shadow-sm" />
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <select name="status" class="w-full rounded-lg border border-gray-200 px-3 py-2">
+                            <option value="">All Statuses</option>
+                            <option value="submitted" {% if status == 'submitted' %}selected{% endif %}>Submitted</option>
+                            <option value="under_review" {% if status == 'under_review' %}selected{% endif %}>Under Review</option>
+                            <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <select name="risk_level" class="w-full rounded-lg border border-gray-200 px-3 py-2">
+                            <option value="">All Risk Levels</option>
+                            <option value="low" {% if risk_level == 'low' %}selected{% endif %}>Low</option>
+                            <option value="medium" {% if risk_level == 'medium' %}selected{% endif %}>Medium</option>
+                            <option value="high" {% if risk_level == 'high' %}selected{% endif %}>High</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-1">
+                        <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2 text-white font-medium">Filter</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="px-6 sm:px-8 pb-8">
+                <div class="overflow-hidden rounded-lg border border-gray-100">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Risk</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Submitted</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            {% for profile in page_obj %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ profile.full_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center gap-2">
+                                    {% if profile.status == 'approved' %}
+                                        <span class="h-2 w-2 rounded-full bg-emerald-500 inline-block"></span>
+                                    {% elif profile.status == 'rejected' %}
+                                        <span class="h-2 w-2 rounded-full bg-rose-500 inline-block"></span>
+                                    {% else %}
+                                        <span class="h-2 w-2 rounded-full bg-yellow-400 inline-block"></span>
+                                    {% endif %}
+                                    <span class="lowercase">{{ profile.status }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ profile.risk_level }} / {{ profile.risk_score }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ profile.created_at|date:"F j, Y, g:i a" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{% url 'review_kyc_detail' profile.id %}" class="text-primary hover:underline">Review</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">No profiles found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+                    <div class="flex items-center gap-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}&status={{ status }}&risk_level={{ risk_level }}&search={{ search }}" class="px-3 py-2 rounded border border-gray-200 text-sm text-gray-600">Previous</a>
+                        {% else %}
+                            <span class="px-3 py-2 rounded border border-gray-100 text-sm text-gray-300">Previous</span>
+                        {% endif %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&status={{ status }}&risk_level={{ risk_level }}&search={{ search }}" class="px-3 py-2 rounded border border-gray-200 text-sm text-gray-600">Next</a>
+                        {% else %}
+                            <span class="px-3 py-2 rounded border border-gray-100 text-sm text-gray-300">Next</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

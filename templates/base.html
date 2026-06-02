@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Digital KYC &amp; Document Verification Portal</title>
+    <script src="https://cdn.tailwindcss.com/?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#570000',
+                        'on-primary': '#ffffff'
+                    },
+                    fontFamily: { headline: ['Manrope','sans-serif'], body: ['Inter','sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        body { font-family: Inter, sans-serif; background:#fbfbfb; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col text-gray-900">
+    <header class="bg-white sticky top-0 z-50 border-b">
+        <div class="max-w-7xl mx-auto px-12 py-6 grid grid-cols-3 items-center">
+            <div>
+                <a class="font-headline text-lg text-primary font-semibold" href="{% url 'home' %}">Digital KYC &amp; Document Verification Portal</a>
+            </div>
+            <nav class="hidden sm:flex justify-center gap-8 text-sm text-gray-600">
+                <a class="hover:text-primary" href="{% url 'home' %}">Home</a>
+                <a class="hover:text-primary" href="{% url 'dashboard' %}">Dashboard</a>
+            </nav>
+            <div class="flex justify-end items-center gap-6 text-gray-600">
+                <!-- Notifications -->
+                <div class="relative">
+                    <button id="navNotificationsBtn" class="material-symbols-outlined p-2 rounded-full hover:bg-gray-100 relative">notifications
+                        {% if nav_unread_count and nav_unread_count > 0 %}
+                            <span id="navNotificationsBadge" class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-600 rounded-full">{{ nav_unread_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div id="navNotificationsMenu" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border overflow-hidden z-50">
+                        <div class="p-3 text-sm font-semibold text-gray-700">Notifications</div>
+                        <div class="max-h-60 overflow-auto">
+                            {% if nav_notifications %}
+                                {% for item in nav_notifications %}
+                                    <a href="{% if item.url %}{{ item.url }}{% elif item.action %}# {% else %}# {% endif %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700 border-t">{% if item.action %}{{ item.action }}{% else %}{{ item.label }}{% endif %} <span class="text-xs text-gray-400 block">{% if item.created_at %}{{ item.created_at|date:'M d, Y H:i' }}{% endif %}</span></a>
+                                {% endfor %}
+                            {% else %}
+                                <div class="px-3 py-4 text-sm text-gray-500">No notifications</div>
+                            {% endif %}
+                        </div>
+                        <div class="border-t text-center">
+                            {% if nav_is_client %}
+                                <a href="{% url 'audit_my_logs' %}" class="block px-3 py-2 text-sm text-primary">View all</a>
+                            {% elif nav_is_reviewer %}
+                                <a href="{% url 'reviewer_dashboard' %}" class="block px-3 py-2 text-sm text-primary">View all</a>
+                            {% else %}
+                                <a href="{% url 'audit_logs' %}" class="block px-3 py-2 text-sm text-primary">View all</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account menu -->
+                <div class="relative">
+                    <button id="navAccountBtn" class="material-symbols-outlined p-2 rounded-full hover:bg-gray-100">account_circle</button>
+                    <div id="navAccountMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border overflow-hidden z-50">
+                        {% if user.is_authenticated %}
+                            {% if nav_is_client %}
+                                <a href="{% url 'profile' %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">My Profile</a>
+                            {% elif nav_is_reviewer %}
+                                <a href="{% url 'reviewer_dashboard' %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Reviewer Dashboard</a>
+                                <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">My Assignments</a>
+                                <a href="{% url 'profile' %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Profile</a>
+                            {% elif nav_is_thirdparty %}
+                                <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">API Docs</a>
+                                <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Manage Keys</a>
+                            {% else %}
+                                <a href="{% url 'profile' %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Profile</a>
+                            {% endif %}
+                            <form method="post" action="{% url 'logout' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Logout</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Login</a>
+                            <a href="{% url 'register' %}" class="block px-3 py-2 hover:bg-gray-50 text-sm text-gray-700">Register</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% if messages %}
+        <div class="max-w-7xl mx-auto w-full px-6 pt-6">
+            {% for message in messages %}
+                <div class="inline-block px-4 py-2 rounded bg-white shadow-sm mb-2">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-100 border-t">
+        <div class="max-w-7xl mx-auto py-10 px-6 text-center">
+            <div class="font-headline text-lg text-primary font-semibold mb-3">3A Banking Corp.</div>
+            <div class="flex justify-center gap-8 mb-4 text-sm text-gray-600">
+                <a href="#">Security Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Help Center</a>
+                <a href="#">Privacy Statement</a>
+            </div>
+            <p class="text-xs text-gray-500">© 2026 3A Banking Corp. All rights reserved. Member FDIC. Security standards verified by ISO 27001.</p>
+        </div>
+    </footer>
+
+    {% block extra_scripts %}
+    <script>
+    document.addEventListener('click', function(e){
+        const nBtn = document.getElementById('navNotificationsBtn');
+        const nMenu = document.getElementById('navNotificationsMenu');
+        const nBadge = document.getElementById('navNotificationsBadge');
+        const aBtn = document.getElementById('navAccountBtn');
+        const aMenu = document.getElementById('navAccountMenu');
+
+        if(nBtn && nBtn.contains(e.target)){
+            if(nMenu) nMenu.classList.toggle('hidden');
+            if(aMenu) aMenu.classList.add('hidden');
+            fetch("{% url 'mark_notifications_seen' %}", { credentials: 'same-origin' })
+                .then(() => {
+                    if (nBadge) nBadge.remove();
+                })
+                .catch(() => {});
+            return;
+        }
+
+        if(aBtn && aBtn.contains(e.target)){
+            if(aMenu) aMenu.classList.toggle('hidden');
+            if(nMenu) nMenu.classList.add('hidden');
+            return;
+        }
+
+        if(nMenu && !nMenu.contains(e.target) && nBtn && !nBtn.contains(e.target)) nMenu.classList.add('hidden');
+        if(aMenu && !aMenu.contains(e.target) && aBtn && !aBtn.contains(e.target)) aMenu.classList.add('hidden');
+    });
+    </script>
+    {% endblock %}
+</body>
+</html>
