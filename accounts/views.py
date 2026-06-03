@@ -14,7 +14,7 @@ def register_view(request):
             user.set_password(form.cleaned_data["password"])
             user.save()
 
-            client_group = Group.objects.get(name="Client")
+            client_group, _ = Group.objects.get_or_create(name="Client")
             user.groups.add(client_group)
 
             create_audit_log(
