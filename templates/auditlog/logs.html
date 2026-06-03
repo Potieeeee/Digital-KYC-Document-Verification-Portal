@@ -1,27 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Compliance Audit Logs</h2>
+<div class="mb-6 flex items-center justify-between">
+    <h2 class="text-xl font-semibold">Audit Logs</h2>
+    <div class="text-sm text-gray-500">Showing {{ logs|length }} entries</div>
+</div>
 
-<table border="1" cellpadding="8">
+<form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <input type="text" name="q" placeholder="Search (username, action, object, id)" value="{{ filters.q|default:'' }}" class="p-2 border rounded" />
+    <input type="text" name="username" placeholder="Actor username" value="{{ filters.username|default:'' }}" class="p-2 border rounded" />
+    <input type="text" name="action" placeholder="Action" value="{{ filters.action|default:'' }}" class="p-2 border rounded" />
+    <input type="text" name="object" placeholder="Object type" value="{{ filters.object|default:'' }}" class="p-2 border rounded" />
+    <input type="text" name="id" placeholder="Object id" value="{{ filters.id|default:'' }}" class="p-2 border rounded" />
+    <div class="flex gap-2">
+        <input type="date" name="date_from" value="{{ filters.date_from|default:'' }}" class="p-2 border rounded" />
+        <input type="date" name="date_to" value="{{ filters.date_to|default:'' }}" class="p-2 border rounded" />
+        <button type="submit" class="px-4 py-2 bg-primary text-white rounded">Search</button>
+    </div>
+</form>
+
+<div class="overflow-x-auto">
+<table class="min-w-full bg-white border-collapse">
     <tr>
-        <th>Date</th>
-        <th>Actor</th>
-        <th>Action</th>
-        <th>Object</th>
-        <th>IP</th>
-        <th>Hash</th>
+        <th class="text-left p-2 border-b">Date</th>
+        <th class="text-left p-2 border-b">Actor</th>
+        <th class="text-left p-2 border-b">Action</th>
+        <th class="text-left p-2 border-b">Object</th>
+        <th class="text-left p-2 border-b">IP</th>
+        <th class="text-left p-2 border-b">Hash</th>
     </tr>
-
     {% for log in logs %}
+    <tr class="hover:bg-gray-50">
+        <td class="p-2 align-top border-b">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+        <td class="p-2 align-top border-b">{{ log.actor }}</td>
+        <td class="p-2 align-top border-b">{{ log.action }}</td>
+        <td class="p-2 align-top border-b">{{ log.object_type }} <span class="text-xs text-gray-500">#{{ log.object_id }}</span></td>
+        <td class="p-2 align-top border-b">{{ log.ip_address }}</td>
+        <td class="p-2 align-top border-b">{{ log.event_hash|slice:":12" }}...</td>
+    </tr>
+    {% empty %}
     <tr>
-        <td>{{ log.created_at }}</td>
-        <td>{{ log.actor }}</td>
-        <td>{{ log.action }}</td>
-        <td>{{ log.object_type }} #{{ log.object_id }}</td>
-        <td>{{ log.ip_address }}</td>
-        <td>{{ log.event_hash|slice:":12" }}...</td>
+        <td class="p-4" colspan="6">No logs found for those filters.</td>
     </tr>
     {% endfor %}
-</table>
+    </table>
+    </div>
 {% endblock %}

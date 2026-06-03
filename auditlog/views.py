@@ -4,6 +4,8 @@ from .models import AuditLog
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
+import datetime
+from django.utils.dateparse import parse_date
 
 @login_required
 def client_audit_logs_view(request):
@@ -40,13 +42,59 @@ def mark_notifications_seen_view(request):
     return JsonResponse({'ok': True})
 
 def is_admin_or_compliance(user):
-    return user.groups.filter(name__in=["Admin", "Manager"]).exists()
+    # Allow Admin, Manager and Reviewer to access audit logs/search
+    return user.groups.filter(name__in=["Admin", "Manager", "Reviewer"]).exists()
 
 @login_required
 @user_passes_test(is_admin_or_compliance)
 def audit_logs_view(request):
-    logs = AuditLog.objects.all().order_by("-created_at")[:100]
+    logs = AuditLog.objects.all()
+
+    # Quick combined query
+    q = request.GET.get("q", "").strip()
+    if q:
+        logs = logs.filter(
+            Q(actor__username__icontains=q)
+            | Q(action__icontains=q)
+            | Q(object_type__icontains=q)
+            | Q(object_id__icontains=q)
+        )
+
+    # Fielded filters
+    username = request.GET.get("username", "").strip()
+    if username:
+        logs = logs.filter(actor__username__icontains=username)
+
+    action = request.GET.get("action", "").strip()
+    if action:
+        logs = logs.filter(action__icontains=action)
+
+    object_type = request.GET.get("object", "").strip()
+    if object_type:
+        logs = logs.filter(object_type__icontains=object_type)
+
+    object_id = request.GET.get("id", "").strip()
+    if object_id:
+        logs = logs.filter(object_id__icontains=object_id)
+
+    # Date filters (expecting YYYY-MM-DD)
+    date_from = request.GET.get("date_from", "").strip()
+    if date_from:
+        parsed = parse_date(date_from)
+        if parsed:
+            start_dt = timezone.make_aware(datetime.datetime.combine(parsed, datetime.time.min))
+            logs = logs.filter(created_at__gte=start_dt)
+
+    date_to = request.GET.get("date_to", "").strip()
+    if date_to:
+        parsed = parse_date(date_to)
+        if parsed:
+            end_dt = timezone.make_aware(datetime.datetime.combine(parsed, datetime.time.max))
+            logs = logs.filter(created_at__lte=end_dt)
+
+    logs = logs.order_by("-created_at")[:500]
 
     return render(request, "auditlog/logs.html", {
-        "logs": logs
+        "logs": logs,
+        "filters": request.GET,
     })
